@@ -1,13 +1,63 @@
 {
   "name": "crown",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+  "version": "0.1.0",
+  "description": "A modern development framework for creating print-quality PDFs with PrinceXML",
+  "type": "module",
+  "main": "./dist/index.mjs",
+  "types": "./dist/index.d.mts",
+  "bin": {
+    "crown": "./dist/cli.mjs"
   },
-  "keywords": [],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.mts",
+      "import": "./dist/index.mjs"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "templates"
+  ],
+  "scripts": {
+    "build": "tsdown",
+    "dev": "tsdown --watch",
+    "type-check": "tsc --noEmit",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "prince",
+    "princexml",
+    "pdf",
+    "book",
+    "publishing",
+    "markdown",
+    "template",
+    "print"
+  ],
   "author": "",
-  "license": "ISC",
-  "type": "commonjs"
+  "license": "MIT",
+  "dependencies": {
+    "@types/glob": "^8.1.0",
+    "chokidar": "^4.0.3",
+    "commander": "^12.1.0",
+    "cosmiconfig": "^9.0.0",
+    "glob": "^13.0.0",
+    "gray-matter": "^4.0.3",
+    "handlebars": "^4.7.8",
+    "marked": "^14.1.3",
+    "papaparse": "^5.4.1",
+    "picocolors": "^1.1.1",
+    "vite": "^6.0.3",
+    "yaml": "^2.6.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "@types/papaparse": "^5.3.15",
+    "tsdown": "^0.17.0-beta.6",
+    "typescript": "^5.7.2"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
 }

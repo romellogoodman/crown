@@ -1,0 +1,177 @@
+/* Page setup */
+@page {
+  size: 5.5in 8.5in;
+  margin: 0.75in 0.5in;
+}
+
+@page :left {
+  @bottom-left {
+    content: counter(page);
+    font-size: 10pt;
+    font-family: serif;
+  }
+}
+
+@page :right {
+  @bottom-right {
+    content: counter(page);
+    font-size: 10pt;
+    font-family: serif;
+  }
+}
+
+/* Hide page numbers on title page */
+@page :first {
+  @bottom-left { content: none; }
+  @bottom-right { content: none; }
+}
+
+/* Typography */
+body {
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 11pt;
+  line-height: 1.6;
+  color: #222;
+  hyphens: auto;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Helvetica Neue', Arial, sans-serif;
+  font-weight: 600;
+  line-height: 1.2;
+  color: #000;
+  break-after: avoid;
+}
+
+h1 {
+  font-size: 24pt;
+  margin: 0 0 1em 0;
+}
+
+h2 {
+  font-size: 18pt;
+  margin: 1.5em 0 0.75em 0;
+}
+
+h3 {
+  font-size: 14pt;
+  margin: 1.25em 0 0.5em 0;
+}
+
+p {
+  margin: 0 0 0.75em 0;
+  text-align: justify;
+  widows: 2;
+  orphans: 2;
+}
+
+/* Title page */
+.title-page {
+  page: title;
+  text-align: center;
+  margin-top: 3in;
+}
+
+.title-page h1 {
+  font-size: 36pt;
+  margin-bottom: 0.5em;
+}
+
+.title-page p {
+  font-size: 14pt;
+  text-align: center;
+}
+
+.title-page hr {
+  width: 30%;
+  margin: 2em auto;
+  border: none;
+  border-top: 1px solid #666;
+}
+
+/* Chapters */
+.chapter {
+  break-before: page;
+}
+
+.chapter h1 {
+  break-before: recto;
+  margin-top: 0;
+}
+
+.subtitle {
+  font-style: italic;
+  font-size: 12pt;
+  color: #666;
+  margin-bottom: 2em;
+}
+
+/* Lists */
+ul, ol {
+  margin: 0 0 0.75em 1.5em;
+}
+
+li {
+  margin-bottom: 0.25em;
+}
+
+/* Code */
+code {
+  font-family: 'Monaco', 'Courier New', monospace;
+  font-size: 0.9em;
+  background: #f5f5f5;
+  padding: 0.1em 0.3em;
+  border-radius: 2px;
+}
+
+pre {
+  background: #f5f5f5;
+  padding: 1em;
+  border-radius: 4px;
+  overflow-x: auto;
+  margin: 0 0 0.75em 0;
+  break-inside: avoid;
+}
+
+pre code {
+  background: none;
+  padding: 0;
+}
+
+/* Blockquotes */
+blockquote {
+  margin: 1em 2em;
+  padding-left: 1em;
+  border-left: 3px solid #ccc;
+  font-style: italic;
+  color: #666;
+}
+
+/* Links */
+a {
+  color: #0066cc;
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+/* Tables */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0 0 0.75em 0;
+  break-inside: avoid;
+}
+
+th, td {
+  padding: 0.5em;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+}
+
+th {
+  font-weight: 600;
+  background: #f5f5f5;
+}

@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="{{metadata.lang}}">
+<head>
+  <meta charset="UTF-8">
+  <title>{{metadata.title}}</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  {{#each chapters}}
+    {{#if (eq @index 0)}}
+      {{> title this}}
+    {{else}}
+      {{> chapter this}}
+    {{/if}}
+  {{/each}}
+</body>
+</html>

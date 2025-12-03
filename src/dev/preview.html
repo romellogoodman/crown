@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Crown PDF Preview</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body, html {
+      height: 100%;
+      overflow: hidden;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #1a1a1a;
+    }
+
+    #container {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+
+    #header {
+      background: #2a2a2a;
+      padding: 12px 20px;
+      border-bottom: 1px solid #3a3a3a;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      color: #fff;
+    }
+
+    #header h1 {
+      font-size: 16px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    #status {
+      font-size: 13px;
+      padding: 4px 12px;
+      border-radius: 4px;
+      background: #3a3a3a;
+    }
+
+    #status.building {
+      background: #f59e0b;
+      color: #000;
+    }
+
+    #status.success {
+      background: #10b981;
+      color: #000;
+    }
+
+    #status.error {
+      background: #ef4444;
+      color: #fff;
+    }
+
+    #iframe-container {
+      flex: 1;
+      position: relative;
+      background: #333;
+    }
+
+    iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+      background: white;
+    }
+
+    #error {
+      display: none;
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: #1a1a1a;
+      color: #ef4444;
+      padding: 40px;
+      overflow: auto;
+    }
+
+    #error.show {
+      display: block;
+    }
+
+    #error h2 {
+      color: #ef4444;
+      margin-bottom: 20px;
+    }
+
+    #error pre {
+      background: #2a2a2a;
+      padding: 20px;
+      border-radius: 8px;
+      overflow: auto;
+      color: #fff;
+      font-family: 'Monaco', 'Courier New', monospace;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .crown-icon {
+      font-size: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div id="container">
+    <div id="header">
+      <h1>
+        <span class="crown-icon">👑</span>
+        Crown PDF Preview
+      </h1>
+      <div id="status">Ready</div>
+    </div>
+    <div id="iframe-container">
+      <iframe id="pdf-frame" src="/book.pdf"></iframe>
+      <div id="error">
+        <h2>Build Error</h2>
+        <pre id="error-message"></pre>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    const iframe = document.getElementById('pdf-frame');
+    const status = document.getElementById('status');
+    const error = document.getElementById('error');
+    const errorMessage = document.getElementById('error-message');
+
+    function updateStatus(state, text) {
+      status.className = state;
+      status.textContent = text;
+    }
+
+    function showError(message) {
+      error.classList.add('show');
+      errorMessage.textContent = message;
+      iframe.style.display = 'none';
+    }
+
+    function hideError() {
+      error.classList.remove('show');
+      iframe.style.display = 'block';
+    }
+
+    function reloadPDF() {
+      const timestamp = Date.now();
+      iframe.src = `/book.pdf?t=${timestamp}`;
+      hideError();
+    }
+
+    // Listen for HMR events from Vite
+    if (import.meta.hot) {
+      import.meta.hot.on('crown:building', () => {
+        updateStatus('building', 'Building...');
+      });
+
+      import.meta.hot.on('crown:success', () => {
+        updateStatus('success', 'Build successful');
+        reloadPDF();
+      });
+
+      import.meta.hot.on('crown:error', (data) => {
+        updateStatus('error', 'Build failed');
+        showError(data.message);
+      });
+    }
+
+    // Initial load
+    iframe.onload = () => {
+      if (!error.classList.contains('show')) {
+        updateStatus('success', 'Ready');
+      }
+    };
+  </script>
+</body>
+</html>
