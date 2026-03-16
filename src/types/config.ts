@@ -13,6 +13,8 @@ export interface CrownConfig {
     template: string;
     /** Path to main stylesheet */
     styles: string;
+    /** Path to assets directory (fonts, images, etc.) to copy to output */
+    assets?: string;
   };
 
   /**
@@ -116,7 +118,13 @@ export interface CrownConfig {
 /**
  * Resolved configuration with all defaults applied
  */
-export interface ResolvedCrownConfig extends Required<Omit<CrownConfig, 'metadata' | 'page' | 'prince' | 'devServer' | 'data' | 'helpers' | 'markdown'>> {
+export interface ResolvedCrownConfig extends Required<Omit<CrownConfig, 'metadata' | 'page' | 'prince' | 'devServer' | 'data' | 'helpers' | 'markdown' | 'input'>> {
+  input: {
+    content: string;
+    template: string;
+    styles: string;
+    assets: string | null;
+  };
   metadata: Required<NonNullable<CrownConfig['metadata']>>;
   page: {
     size: string;

@@ -52,9 +52,13 @@ const DEFAULT_CONFIG: Omit<ResolvedCrownConfig, 'input' | 'output' | 'root'> = {
 
 /**
  * Load Crown configuration from the project
+ *
+ * @param configPath - Optional path to a specific config file, or a directory to search from.
+ *                     If it points to a file, that file is loaded directly.
+ *                     If it points to a directory (or is omitted), cosmiconfig searches for a config.
  */
 export async function loadConfig(
-  searchFrom: string = process.cwd()
+  configPath?: string
 ): Promise<ResolvedCrownConfig> {
   const explorer = cosmiconfig(MODULE_NAME, {
     searchPlaces: [
@@ -69,7 +73,24 @@ export async function loadConfig(
     ],
   });
 
-  const result = await explorer.search(searchFrom);
+  let result;
+
+  if (configPath) {
+    const resolvedPath = resolve(process.cwd(), configPath);
+
+    // Check if the path looks like a config file (has an extension)
+    const hasExtension = /\.\w+$/.test(resolvedPath);
+
+    if (hasExtension) {
+      // Load the specific config file
+      result = await explorer.load(resolvedPath);
+    } else {
+      // Treat as a directory to search from
+      result = await explorer.search(resolvedPath);
+    }
+  } else {
+    result = await explorer.search(process.cwd());
+  }
 
   if (!result || !result.config) {
     throw new Error(
@@ -119,6 +140,7 @@ export function resolveConfig(
       content: resolvePathFromRoot(root, userConfig.input.content),
       template: resolvePathFromRoot(root, userConfig.input.template),
       styles: resolvePathFromRoot(root, userConfig.input.styles),
+      assets: userConfig.input.assets ? resolvePathFromRoot(root, userConfig.input.assets) : null,
     },
     output: {
       html: resolvePathFromRoot(root, userConfig.output.html),

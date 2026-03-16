@@ -177,6 +177,7 @@ export class TemplateRenderer {
     return {
       metadata,
       chapters,
+      content: chapters,
       data,
       generatedDate: new Date(),
     };

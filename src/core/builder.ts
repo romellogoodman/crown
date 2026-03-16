@@ -2,7 +2,7 @@
  * Build pipeline orchestration
  */
 
-import { writeFile, copyFile, cp, stat } from 'node:fs/promises';
+import { writeFile, readFile, copyFile, cp, stat } from 'node:fs/promises';
 import { dirname, join, resolve } from 'node:path';
 import { glob } from 'glob';
 import type { ResolvedCrownConfig } from '../types/config.js';
@@ -123,15 +123,44 @@ export class Builder {
   }
 
   /**
+   * Generate @page CSS from config
+   */
+  private generatePageCSS(): string {
+    const { size, margins } = this.config.page;
+    const parts: string[] = [];
+
+    parts.push(`  size: ${size};`);
+
+    // Use inside/outside for facing pages, or top/right/bottom/left
+    if (margins.inside !== undefined && margins.outside !== undefined) {
+      parts.push(`  margin-top: ${margins.top};`);
+      parts.push(`  margin-bottom: ${margins.bottom};`);
+      parts.push(`  margin-inside: ${margins.inside};`);
+      parts.push(`  margin-outside: ${margins.outside};`);
+    } else {
+      parts.push(`  margin: ${margins.top} ${margins.right} ${margins.bottom} ${margins.left};`);
+    }
+
+    return `@page {\n${parts.join('\n')}\n}\n`;
+  }
+
+  /**
    * Copy assets (styles, images, fonts, etc.) to output directory
    */
   private async copyAssets(): Promise<void> {
     const outputDir = dirname(this.config.output.html);
 
-    // Copy main stylesheet
+    // Copy main stylesheet with @page injection from config
     try {
       const stylesOutput = join(outputDir, 'styles.css');
-      await copyFile(this.config.input.styles, stylesOutput);
+      let stylesContent = await readFile(this.config.input.styles, 'utf-8');
+
+      // Inject @page rule from config if not already present in the stylesheet
+      if (!/@page\s*\{/.test(stylesContent)) {
+        stylesContent = this.generatePageCSS() + '\n' + stylesContent;
+      }
+
+      await writeFile(stylesOutput, stylesContent, 'utf-8');
     } catch (error) {
       console.warn(`Warning: Could not copy styles: ${(error as Error).message}`);
     }
@@ -161,7 +190,23 @@ export class Builder {
       }
     }
 
-    // Copy root-level assets directory if it exists
+    // Copy config-specified assets directory if provided
+    if (this.config.input.assets) {
+      try {
+        const assetsStat = await stat(this.config.input.assets);
+        if (assetsStat.isDirectory()) {
+          // Copy to output root (preserving directory name)
+          const dirName = this.config.input.assets.split('/').pop() || 'assets';
+          const destDir = join(outputDir, dirName);
+          await ensureDir(destDir);
+          await cp(this.config.input.assets, destDir, { recursive: true });
+        }
+      } catch {
+        // Assets directory doesn't exist, that's fine
+      }
+    }
+
+    // Copy root-level assets directory if it exists (legacy behavior)
     const assetsDir = join(this.config.root, 'assets');
     try {
       const assetsStat = await stat(assetsDir);

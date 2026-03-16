@@ -46,9 +46,15 @@ crown/
 **Build Pipeline:**
 1. Compile Markdown → HTML (marked + gray-matter, with frontmatter validation)
 2. Load data sources (CSV/JSON/YAML via Papa/js-yaml)
-3. Render Handlebars template with context
-4. Write HTML + copy assets (styles, images, fonts)
+3. Render Handlebars template with context (`content` and `chapters` both available)
+4. Write HTML + copy assets (styles with auto-injected `@page` from config, `input.assets` directory, images, fonts)
 5. Run PrinceXML to generate PDF
+
+**Key behaviors:**
+- `-c`/`--config` flag: loads a specific config file (uses `cosmiconfig.load()` for files, `search()` for directories)
+- `@page` CSS injection: if the stylesheet doesn't contain `@page`, Crown generates one from `page.size` and `page.margins` config
+- Template variables: `content` (preferred) and `chapters` (legacy alias) both reference the same parsed markdown array
+- `input.assets`: optional directory copied to output (preserving directory name) — useful for fonts
 
 ## Working on Crown (HOW)
 

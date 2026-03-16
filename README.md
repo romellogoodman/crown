@@ -76,6 +76,7 @@ export default defineConfig({
     content: "src/content/**/*.md",
     template: "src/templates/layout.html",
     styles: "src/styles.css",
+    assets: "src/fonts", // Optional: copied to output directory
   },
   output: {
     html: "dist/book.html",
@@ -130,7 +131,7 @@ Crown uses Handlebars for templating. Access your content and metadata in templa
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
-    {{#each chapters}}
+    {{#each content}}
     <section class="chapter" id="{{frontmatter.id}}">
       <h1>{{frontmatter.title}}</h1>
       {{{html}}}
@@ -152,9 +153,12 @@ Crown uses Handlebars for templating. Access your content and metadata in templa
 
 ## CSS for Print
 
+Crown automatically generates an `@page` rule from your `page` config (size and margins). If your CSS already includes an `@page` rule, Crown will use yours instead.
+
 Style your books with CSS, including Prince-specific properties:
 
 ```css
+/* @page is auto-generated from config — only add this if you need custom overrides */
 @page {
   size: 5.5in 8.5in;
   margin: 0.75in;
@@ -182,20 +186,23 @@ h1 {
 
 ```bash
 # Development
-crown dev                 # Start dev server
-crown dev --port 3001     # Custom port
-crown dev --no-open       # Don't open browser
+crown dev                           # Start dev server
+crown dev --port 3001               # Custom port
+crown dev --no-open                 # Don't open browser
 
 # Building
-crown build               # Build production PDF
-crown build --output path/to/output.pdf
-crown build --verbose     # Show detailed output
+crown build                         # Build production PDF
+crown build -c path/to/config.js    # Use a specific config file
+crown build --output path/to.pdf    # Custom output path
+crown build --verbose               # Show detailed output
 
 # Utilities
-crown watch               # Watch and rebuild (no server)
-crown preview:html        # Open HTML in browser
-crown preview:pdf         # Open PDF in viewer
+crown watch                         # Watch and rebuild (no server)
+crown preview:html                  # Open HTML in browser
+crown preview:pdf                   # Open PDF in viewer
 ```
+
+All commands accept `-c`/`--config <path>` to specify a config file. This is useful for monorepos or projects with multiple books.
 
 ## Data-Driven Content
 

@@ -50,8 +50,10 @@ export interface TemplateContext {
     keywords: string[];
     lang: string;
   };
-  /** Parsed content files */
+  /** Parsed content files (also available as "content") */
   chapters: ContentFile[];
+  /** Alias for chapters */
+  content: ContentFile[];
   /** Additional data from data sources */
   data: Record<string, unknown>;
   /** Current date */
