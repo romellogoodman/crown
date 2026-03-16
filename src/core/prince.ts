@@ -140,6 +140,7 @@ function buildPrinceArgs(
 
 /**
  * Parse Prince output for warnings and errors
+ * Handles PrinceXML's output format: "prince: file.html: warning: message"
  */
 function parseOutput(output: string): { warnings: string[]; errors: string[] } {
   const warnings: string[] = [];
@@ -151,9 +152,10 @@ function parseOutput(output: string): { warnings: string[]; errors: string[] } {
     const trimmed = line.trim();
     if (!trimmed) continue;
 
-    if (trimmed.includes('warning:')) {
+    // Case-insensitive matching for Prince output patterns
+    if (/\bwarning:/i.test(trimmed)) {
       warnings.push(trimmed);
-    } else if (trimmed.includes('error:')) {
+    } else if (/\berror:/i.test(trimmed)) {
       errors.push(trimmed);
     }
   }
@@ -186,12 +188,34 @@ export async function checkPrinceAvailable(
   executablePath: string = 'prince'
 ): Promise<boolean> {
   try {
-    const result = await runPrince('', '', {
-      executablePath,
-      additionalOptions: ['--version'],
-    });
+    const result = await runPrinceRaw(executablePath, ['--version']);
     return result.success || result.stdout.includes('Prince');
   } catch {
     return false;
   }
+}
+
+/**
+ * Run a raw Prince command (for version checks, etc.)
+ */
+function runPrinceRaw(
+  executablePath: string,
+  args: string[]
+): Promise<{ success: boolean; stdout: string }> {
+  return new Promise((resolve) => {
+    const prince = spawn(executablePath, args);
+    let stdout = '';
+
+    prince.stdout.on('data', (data) => {
+      stdout += data.toString();
+    });
+
+    prince.on('close', (exitCode) => {
+      resolve({ success: exitCode === 0, stdout });
+    });
+
+    prince.on('error', () => {
+      resolve({ success: false, stdout: '' });
+    });
+  });
 }

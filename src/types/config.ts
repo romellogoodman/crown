@@ -95,6 +95,18 @@ export interface CrownConfig {
   helpers?: string;
 
   /**
+   * Markdown configuration
+   */
+  markdown?: {
+    /** Enable GitHub Flavored Markdown (default: true) */
+    gfm?: boolean;
+    /** Convert \n to <br> (default: false) */
+    breaks?: boolean;
+    /** Paths to custom marked extension modules (must export MarkedExtension) */
+    extensions?: string[];
+  };
+
+  /**
    * Root directory (usually where config file is located)
    * @internal
    */
@@ -104,7 +116,7 @@ export interface CrownConfig {
 /**
  * Resolved configuration with all defaults applied
  */
-export interface ResolvedCrownConfig extends Required<Omit<CrownConfig, 'metadata' | 'page' | 'prince' | 'devServer' | 'data' | 'helpers'>> {
+export interface ResolvedCrownConfig extends Required<Omit<CrownConfig, 'metadata' | 'page' | 'prince' | 'devServer' | 'data' | 'helpers' | 'markdown'>> {
   metadata: Required<NonNullable<CrownConfig['metadata']>>;
   page: {
     size: string;
@@ -114,6 +126,11 @@ export interface ResolvedCrownConfig extends Required<Omit<CrownConfig, 'metadat
   devServer: Required<NonNullable<CrownConfig['devServer']>>;
   data: Record<string, string>;
   helpers: string | null;
+  markdown: {
+    gfm: boolean;
+    breaks: boolean;
+    extensions: string[];
+  };
   root: string;
 }
 

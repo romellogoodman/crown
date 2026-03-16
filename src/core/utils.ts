@@ -61,7 +61,7 @@ export function sortByOrder<T extends { frontmatter: { order?: number }; path: s
 /**
  * Debounce a function call
  */
-export function debounce<T extends (...args: any[]) => any>(
+export function debounce<T extends (...args: never[]) => unknown>(
   fn: T,
   delay: number
 ): (...args: Parameters<T>) => void {

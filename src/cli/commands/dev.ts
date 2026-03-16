@@ -20,15 +20,17 @@ export interface DevCommandOptions {
 export async function devCommand(options: DevCommandOptions): Promise<void> {
   try {
     // Load config
-    const config = await loadConfig(options.config || process.cwd());
+    const baseConfig = await loadConfig(options.config || process.cwd());
 
-    // Override config with CLI options
-    if (options.port !== undefined) {
-      config.devServer.port = options.port;
-    }
-    if (options.host !== undefined) {
-      config.devServer.host = options.host;
-    }
+    // Apply CLI overrides without mutating original config
+    const config = {
+      ...baseConfig,
+      devServer: {
+        ...baseConfig.devServer,
+        ...(options.port !== undefined ? { port: options.port } : {}),
+        ...(options.host !== undefined ? { host: options.host } : {}),
+      },
+    };
 
     const open = options.noOpen ? false : options.open ?? config.devServer.open;
 

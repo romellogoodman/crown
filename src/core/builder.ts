@@ -2,8 +2,9 @@
  * Build pipeline orchestration
  */
 
-import { writeFile, copyFile } from 'node:fs/promises';
-import { dirname, join } from 'node:path';
+import { writeFile, copyFile, cp, stat } from 'node:fs/promises';
+import { dirname, join, resolve } from 'node:path';
+import { glob } from 'glob';
 import type { ResolvedCrownConfig } from '../types/config.js';
 import type { BuildResult } from '../types/content.js';
 import { compileMarkdownFiles } from './markdown.js';
@@ -30,7 +31,7 @@ export class Builder {
       // 1. Compile markdown content
       console.log('📝 Compiling markdown...');
       const { result: chapters } = await measureTime(() =>
-        compileMarkdownFiles(this.config.input.content, this.config.root)
+        compileMarkdownFiles(this.config.input.content, this.config.root, this.config.markdown)
       );
       console.log(`   Found ${chapters.length} content files`);
 
@@ -122,7 +123,7 @@ export class Builder {
   }
 
   /**
-   * Copy assets (styles, images, etc.) to output directory
+   * Copy assets (styles, images, fonts, etc.) to output directory
    */
   private async copyAssets(): Promise<void> {
     const outputDir = dirname(this.config.output.html);
@@ -135,8 +136,43 @@ export class Builder {
       console.warn(`Warning: Could not copy styles: ${(error as Error).message}`);
     }
 
-    // TODO: Copy other assets like images, fonts, etc.
-    // This could be enhanced to handle asset directories
+    // Copy asset directories (images, fonts) from content and template dirs
+    const contentDir = dirname(this.config.input.content);
+    const templateDir = dirname(this.config.input.template);
+    const assetPatterns = '**/*.{png,jpg,jpeg,gif,svg,webp,ico,woff,woff2,ttf,otf,eot}';
+
+    for (const sourceDir of [contentDir, templateDir]) {
+      try {
+        const resolvedDir = resolve(this.config.root, sourceDir);
+        const assets = await glob(assetPatterns, {
+          cwd: resolvedDir,
+          absolute: true,
+          nodir: true,
+        });
+
+        for (const asset of assets) {
+          const relativePath = asset.substring(resolvedDir.length + 1);
+          const destPath = join(outputDir, relativePath);
+          await ensureDir(dirname(destPath));
+          await copyFile(asset, destPath);
+        }
+      } catch {
+        // Directory may not exist, that's fine
+      }
+    }
+
+    // Copy root-level assets directory if it exists
+    const assetsDir = join(this.config.root, 'assets');
+    try {
+      const assetsStat = await stat(assetsDir);
+      if (assetsStat.isDirectory()) {
+        const destAssetsDir = join(outputDir, 'assets');
+        await ensureDir(destAssetsDir);
+        await cp(assetsDir, destAssetsDir, { recursive: true });
+      }
+    } catch {
+      // No assets directory, that's fine
+    }
   }
 
   /**

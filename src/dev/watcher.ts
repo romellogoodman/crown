@@ -48,6 +48,9 @@ export class Watcher {
     this.watcher.on('add', (path) => this.handleChange('add', path));
     this.watcher.on('change', (path) => this.handleChange('change', path));
     this.watcher.on('unlink', (path) => this.handleChange('unlink', path));
+    this.watcher.on('error', (error: unknown) => {
+      console.error(`File watcher error: ${error instanceof Error ? error.message : String(error)}`);
+    });
 
     console.log('👀 Watching for changes...');
   }

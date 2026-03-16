@@ -43,6 +43,11 @@ const DEFAULT_CONFIG: Omit<ResolvedCrownConfig, 'input' | 'output' | 'root'> = {
   },
   data: {},
   helpers: null,
+  markdown: {
+    gfm: true,
+    breaks: false,
+    extensions: [],
+  },
 };
 
 /**
@@ -144,6 +149,11 @@ export function resolveConfig(
     },
     data: userConfig.data ?? {},
     helpers: userConfig.helpers ? resolvePathFromRoot(root, userConfig.helpers) : null,
+    markdown: {
+      gfm: userConfig.markdown?.gfm ?? DEFAULT_CONFIG.markdown.gfm,
+      breaks: userConfig.markdown?.breaks ?? DEFAULT_CONFIG.markdown.breaks,
+      extensions: userConfig.markdown?.extensions?.map((ext) => resolvePathFromRoot(root, ext)) ?? [],
+    },
     root,
   };
 

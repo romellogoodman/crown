@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html lang="{{metadata.lang}}">
+<head><title>{{metadata.title}}</title></head>
+<body>
+{{#each chapters}}
+<section>
+<h1>{{this.frontmatter.title}}</h1>
+{{{this.html}}}
+</section>
+{{/each}}
+</body>
+</html>

@@ -5,32 +5,46 @@
 import { mkdir, writeFile, cp, readdir } from 'node:fs/promises';
 import { join, resolve, dirname, basename } from 'node:path';
 import { access } from 'node:fs/promises';
+import { createRequire } from 'node:module';
 import { logger } from '../logger.js';
 import { fileURLToPath } from 'node:url';
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 // Find the templates directory by checking multiple possible locations
 async function findTemplatesDir(): Promise<string> {
   const possiblePaths = [
-    // When running from compiled dist
+    // When running from compiled dist (dist/commands/ -> templates/)
     join(__dirname, '../../templates'),
-    // When running from source
+    // When running from source (src/cli/commands/ -> templates/)
     join(__dirname, '../../../templates'),
     // When installed as a package
     join(__dirname, '../templates'),
   ];
 
+  // Also try resolving from the package root via require.resolve
+  try {
+    const require = createRequire(import.meta.url);
+    const pkgPath = require.resolve('crown/package.json');
+    possiblePaths.push(join(dirname(pkgPath), 'templates'));
+  } catch {
+    // Not installed as a package, that's fine
+  }
+
   for (const path of possiblePaths) {
     try {
       await access(path);
+      logger.dim(`  Using templates from: ${path}`);
       return path;
     } catch {
       // Continue to next path
     }
   }
 
-  throw new Error('Could not find templates directory');
+  throw new Error(
+    `Could not find templates directory. Searched:\n${possiblePaths.map((p) => `  - ${p}`).join('\n')}`
+  );
 }
 
 export interface CreateCommandOptions {
@@ -52,7 +66,7 @@ export async function createCommand(
 
     if (isCurrentDir) {
       // Check if current directory is empty (allow some common files)
-      const allowedFiles = new Set(['.git', '.gitignore', 'README.md', '.DS_Store']);
+      const allowedFiles = new Set(['.git', '.gitignore', 'README.md', '.DS_Store', 'Thumbs.db', 'desktop.ini']);
 
       try {
         const files = await readdir(targetDir);

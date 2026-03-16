@@ -18,17 +18,20 @@ export interface BuildCommandOptions {
 export async function buildCommand(options: BuildCommandOptions): Promise<void> {
   try {
     // Load config
-    const config = await loadConfig(options.config || process.cwd());
+    const baseConfig = await loadConfig(options.config || process.cwd());
 
-    // Override output if specified
-    if (options.output) {
-      config.output.pdf = options.output;
-    }
-
-    // Override verbose if specified
-    if (options.verbose) {
-      config.prince.verbose = true;
-    }
+    // Apply CLI overrides without mutating original config
+    const config = {
+      ...baseConfig,
+      output: {
+        ...baseConfig.output,
+        ...(options.output ? { pdf: options.output } : {}),
+      },
+      prince: {
+        ...baseConfig.prince,
+        ...(options.verbose ? { verbose: true } : {}),
+      },
+    };
 
     // Run build
     const result = await build(config);

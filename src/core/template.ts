@@ -105,19 +105,49 @@ export class TemplateRenderer {
    * Load custom helpers from a JavaScript file
    */
   async registerCustomHelpers(helpersPath: string): Promise<void> {
+    const resolvedPath = resolve(helpersPath);
+
+    // Check file exists before attempting import
     try {
-      // Use dynamic import for ES modules
-      const helpersModule = await import(resolve(helpersPath));
+      const { access } = await import('node:fs/promises');
+      await access(resolvedPath);
+    } catch {
+      throw new Error(
+        `Custom helpers file not found: ${resolvedPath}`
+      );
+    }
+
+    try {
+      const helpersModule = await import(resolvedPath);
       const helpers = helpersModule.default || helpersModule;
 
-      if (typeof helpers === 'object') {
-        for (const [name, helper] of Object.entries(helpers)) {
-          if (typeof helper === 'function') {
-            this.handlebars.registerHelper(name, helper as Handlebars.HelperDelegate);
-          }
+      if (typeof helpers !== 'object' || helpers === null) {
+        throw new Error(
+          `Custom helpers file must export an object of functions, got ${typeof helpers}`
+        );
+      }
+
+      let registered = 0;
+      for (const [name, helper] of Object.entries(helpers)) {
+        if (typeof helper === 'function') {
+          this.handlebars.registerHelper(name, helper as Handlebars.HelperDelegate);
+          registered++;
+        } else {
+          console.warn(
+            `Warning: Skipping helper "${name}" — expected function, got ${typeof helper}`
+          );
         }
       }
+
+      if (registered === 0) {
+        console.warn(
+          `Warning: No valid helper functions found in ${helpersPath}`
+        );
+      }
     } catch (error) {
+      if (error instanceof Error && error.message.startsWith('Custom helpers')) {
+        throw error;
+      }
       throw new Error(
         `Failed to load custom helpers from ${helpersPath}: ${(error as Error).message}`
       );
