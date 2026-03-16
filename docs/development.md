@@ -52,17 +52,23 @@ npm run type-check   # TypeScript validation only
 
 ### Testing Strategy
 
-Currently manual testing via test projects. Future: automated tests with vitest.
+Crown uses **vitest** for automated testing.
 
-**Test Checklist:**
-1. ✅ Build completes without errors
-2. ✅ HTML output is correct
-3. ✅ PDF generation works (requires Prince)
-4. ✅ Dev server starts and serves preview
-5. ✅ Hot reload works on file changes
-6. ✅ CLI commands execute correctly
+```bash
+npm test             # Run full test suite
+npm run test:watch   # Run tests in watch mode
+```
 
-**Test Project Creation:**
+**Test files** are in `tests/` and cover:
+- `markdown.test.ts` - Markdown compilation, frontmatter validation, error recovery
+- `config.test.ts` - Config defaults, merging, path resolution, validation
+- `template.test.ts` - Template rendering, multiple chapters, helper errors
+- `data.test.ts` - JSON/CSV/YAML loading, error handling
+- `utils.test.ts` - Path resolution, sorting, debounce, timing
+- `logger.test.ts` - Log levels, stderr routing
+- `prince.test.ts` - Config-to-options mapping
+
+**Manual testing** for end-to-end validation:
 ```bash
 # Quick test project
 cd /tmp && rm -rf test-crown-book && mkdir test-crown-book
@@ -309,7 +315,7 @@ console.log(`Took ${duration}ms`);
 
 ### Pre-release Checklist
 
-1. ✅ All tests pass (manual testing)
+1. ✅ All tests pass (`npm test`)
 2. ✅ Build succeeds (`npm run build`)
 3. ✅ TypeScript validates (`npm run type-check`)
 4. ✅ README is up to date

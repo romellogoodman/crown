@@ -18,15 +18,17 @@ Detailed technical documentation for Crown's architecture and design decisions.
 - `validateEnvironment()` - Check PrinceXML availability
 
 #### `markdown.ts` - Markdown Compilation
-- Uses marked for MD → HTML conversion
-- gray-matter for YAML frontmatter parsing
-- Glob pattern matching for content files
+- Uses marked for MD → HTML conversion (supports custom extensions)
+- gray-matter for YAML frontmatter parsing with error recovery
+- Frontmatter validation (type checking for order, title, tags, id)
+- Glob pattern matching for content files (warns instead of throwing on no matches)
 - Content sorting by `order` field or filename
 
 **Key functions:**
-- `compileMarkdownFiles(pattern, root)` - Compile all matching files
+- `compileMarkdownFiles(pattern, root, markdownOptions?)` - Compile all matching files
 - `compileMarkdownFile(filePath, root)` - Single file compilation
 - `createMarkdownHelper()` - Handlebars helper for inline markdown
+- `validateFrontmatter(data, filePath)` - Runtime frontmatter type validation
 
 #### `template.ts` - Template Rendering
 - Handlebars template engine
@@ -43,23 +45,23 @@ Detailed technical documentation for Crown's architecture and design decisions.
 - Coordinates entire build pipeline
 - Error handling and recovery
 - Build timing and statistics
-- Asset copying (styles, etc.)
+- Asset copying (styles, images, fonts, and root `assets/` directory)
 
 **Key class:** `Builder`
 - `build()` - Full build pipeline
 - `buildSafe()` - Build with error recovery (for watch mode)
-- `copyAssets()` - Copy styles and other assets
+- `copyAssets()` - Copy styles, images, fonts, and other assets
 
 #### `prince.ts` - PrinceXML Integration
 - Spawns prince CLI process
-- Parses output for warnings/errors
+- Case-insensitive regex parsing of output for warnings/errors
 - Supports all Prince command-line options
 - PDF metadata configuration
 
 **Key functions:**
 - `runPrince(htmlPath, pdfPath, options)` - Run Prince
 - `configToPrinceOptions(config)` - Convert config to Prince options
-- `checkPrinceAvailable()` - Verify Prince installation
+- `checkPrinceAvailable()` - Verify Prince installation (uses dedicated `runPrinceRaw`)
 
 #### `data.ts` - Data Loading
 - CSV parsing via Papa Parse
@@ -133,8 +135,9 @@ Detailed technical documentation for Crown's architecture and design decisions.
 
 #### `logger.ts` - Pretty Logging
 - Colored console output using picocolors
-- Consistent logging format
-- Status indicators (✔, ✖, ⚠, ℹ, 👑)
+- Log levels: silent, error, warn, info, debug
+- Errors and warnings go to stderr
+- Status indicators (✔, ✖, ⚠, ℹ, 👑, ●)
 
 ## Data Flow
 

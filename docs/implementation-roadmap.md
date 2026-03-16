@@ -11,7 +11,7 @@ Crown is a modern development framework for creating print-quality PDFs using Pr
 - **Module System**: ES Modules (modern standard)
 - **Package Manager**: npm
 - **Structure**: Single package (crown) containing both framework and CLI
-- **Build Tool**: tsup for building the framework, Vite for user projects' dev server
+- **Build Tool**: tsdown (Rolldown) for building the framework, Vite for user projects' dev server
 
 ### Dependencies
 - **Templates**: Handlebars (logic-less, well-documented)
@@ -20,7 +20,7 @@ Crown is a modern development framework for creating print-quality PDFs using Pr
 - **CLI**: commander (feature-rich CLI framework)
 - **File Watching**: chokidar (cross-platform file watcher)
 - **Dev Server**: Vite (fast HMR, WebSocket support)
-- **Styles**: SCSS support via sass
+- **Styles**: CSS (SCSS support planned)
 - **Config**: cosmiconfig (flexible config loading)
 
 ## Project Structure
@@ -80,10 +80,12 @@ crown/
 │       ├── .gitignore
 │       └── README.md
 │
+├── tests/                      # Vitest test suite
 ├── dist/                       # Built framework code
 ├── package.json
 ├── tsconfig.json
-├── tsup.config.ts
+├── tsdown.config.ts
+├── vitest.config.ts
 └── README.md
 ```
 
@@ -221,12 +223,12 @@ crown/
    - CSS minification
    - Prince-specific CSS validation
 
-### Phase 6: Testing & Documentation
-1. **Testing**
-   - Unit tests (vitest)
-   - Integration tests
-   - CLI tests
-   - Template tests
+### Phase 6: Testing & Documentation (Partially Complete)
+1. **Testing** ✅
+   - Unit tests with vitest (markdown, config, template, data, utils, logger, prince)
+   - Test fixtures in `tests/fixtures/`
+   - Integration tests (planned)
+   - CLI tests (planned)
 
 2. **Documentation**
    - README with quick start
@@ -315,6 +317,11 @@ export default defineConfig({
     authors: './data/authors.json',
   },
   helpers: './src/templates/helpers.js',
+  markdown: {
+    gfm: true,
+    breaks: false,
+    extensions: ['./src/extensions/footnotes.js'],
+  },
 });
 ```
 

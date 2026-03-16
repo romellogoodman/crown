@@ -13,6 +13,7 @@ crown/
 │   ├── dev/            # Vite dev server, file watching, HMR
 │   ├── cli/            # Commander-based CLI with subcommands
 │   └── types/          # TypeScript type definitions
+├── tests/              # Vitest test suite
 ├── templates/default/  # Scaffolding template for new projects
 └── docs/               # Detailed documentation
 ```
@@ -29,10 +30,11 @@ crown/
 - TypeScript (ES2022) + ESM modules
 - tsdown (Rolldown) for building (replaces deprecated tsup)
 - Handlebars for templating (logic-less, document-friendly)
-- marked + gray-matter for Markdown + frontmatter
+- marked + gray-matter for Markdown + frontmatter (supports custom marked extensions)
 - Vite for dev server (fast HMR, WebSocket)
 - chokidar for file watching
 - commander for CLI
+- vitest for testing
 
 **Design Decisions:**
 - ESM-only: Modern, better tree-shaking
@@ -42,10 +44,10 @@ crown/
 - Content ordering via frontmatter `order` field, not filenames
 
 **Build Pipeline:**
-1. Compile Markdown → HTML (marked + gray-matter)
+1. Compile Markdown → HTML (marked + gray-matter, with frontmatter validation)
 2. Load data sources (CSV/JSON/YAML via Papa/js-yaml)
 3. Render Handlebars template with context
-4. Write HTML + copy assets
+4. Write HTML + copy assets (styles, images, fonts)
 5. Run PrinceXML to generate PDF
 
 ## Working on Crown (HOW)
@@ -58,6 +60,13 @@ npm run type-check   # Validate TypeScript
 ```
 
 ### Testing
+```bash
+npm test             # Run vitest test suite
+npm run test:watch   # Run tests in watch mode
+```
+
+Tests are in `tests/` covering: markdown, config, template, data, utils, logger, prince.
+
 Manual testing pattern:
 ```bash
 cd /tmp && rm -rf test-crown-book && mkdir test-crown-book

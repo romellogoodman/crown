@@ -251,6 +251,25 @@ export default defineConfig({
 });
 ```
 
+## Markdown Extensions
+
+Crown supports custom [marked extensions](https://marked.js.org/using_advanced#extensions) for features like footnotes, math, etc.:
+
+```javascript
+export default defineConfig({
+  // ...
+  markdown: {
+    gfm: true, // GitHub Flavored Markdown (default: true)
+    breaks: false, // Convert \n to <br> (default: false)
+    extensions: [
+      "./src/extensions/footnotes.js", // Custom marked extensions
+    ],
+  },
+});
+```
+
+Each extension file should export a valid `MarkedExtension` object.
+
 ## Examples
 
 - **Basic Book** - Simple chapter-based book
