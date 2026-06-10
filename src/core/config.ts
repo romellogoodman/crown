@@ -31,7 +31,10 @@ const DEFAULT_CONFIG: Omit<ResolvedCrownConfig, 'input' | 'output' | 'root'> = {
     },
   },
   prince: {
-    javascript: true,
+    // Disabled by default: enabling JavaScript lets <script> tags in the
+    // rendered HTML execute inside Prince (local file reads, network access).
+    // Only enable it for content you trust.
+    javascript: false,
     verbose: false,
     options: [],
     executablePath: 'prince',

@@ -27,7 +27,9 @@ export default defineConfig({
     },
   },
   prince: {
-    javascript: true,
+    // Set to true only if your content needs Prince to run <script> tags.
+    // Enabling it executes JavaScript from the rendered HTML inside Prince.
+    javascript: false,
     verbose: false,
   },
   devServer: {
