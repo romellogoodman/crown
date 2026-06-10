@@ -194,13 +194,15 @@ function resolvePathFromRoot(root: string, path: string): string {
 
 /**
  * Validate that required dependencies are available
+ *
+ * @param executablePath - Prince executable to check (defaults to 'prince')
  */
-export async function validateEnvironment(): Promise<void> {
-  // Check if Prince is available
-  const { execSync } = await import('node:child_process');
-  try {
-    execSync('prince --version', { stdio: 'ignore' });
-  } catch {
+export async function validateEnvironment(
+  executablePath: string = 'prince'
+): Promise<void> {
+  const { checkPrinceAvailable } = await import('./prince.js');
+  const available = await checkPrinceAvailable(executablePath);
+  if (!available) {
     throw new Error(
       'PrinceXML is not installed or not in PATH. Please install PrinceXML from https://www.princexml.com/download/'
     );
