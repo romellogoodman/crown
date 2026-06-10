@@ -7,6 +7,7 @@ import type { ResolvedCrownConfig } from '../types/config.js';
 import { Builder } from '../core/builder.js';
 import { Watcher, type WatchEvent } from './watcher.js';
 import { readFile } from 'node:fs/promises';
+import { createReadStream } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
@@ -38,17 +39,18 @@ export function crownPlugin(config: ResolvedCrownConfig): Plugin {
           return;
         }
 
-        // Serve the generated PDF
+        // Serve the generated PDF (streamed to avoid buffering it in memory)
         if (req.url?.startsWith('/book.pdf')) {
-          try {
-            const pdfContent = await readFile(config.output.pdf);
+          const stream = createReadStream(config.output.pdf);
+          stream.on('open', () => {
             res.setHeader('Content-Type', 'application/pdf');
             res.setHeader('Cache-Control', 'no-cache');
-            res.end(pdfContent);
-          } catch {
+          });
+          stream.on('error', () => {
             res.statusCode = 404;
             res.end('PDF not found. Building...');
-          }
+          });
+          stream.pipe(res);
           return;
         }
 
