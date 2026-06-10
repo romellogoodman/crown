@@ -128,7 +128,14 @@ export interface ResolvedCrownConfig extends Required<Omit<CrownConfig, 'metadat
   metadata: Required<NonNullable<CrownConfig['metadata']>>;
   page: {
     size: string;
-    margins: Required<NonNullable<CrownConfig['page']>['margins']>;
+    margins: {
+      top: string;
+      bottom: string;
+      left: string;
+      right: string;
+      inside: string;
+      outside: string;
+    };
   };
   prince: Required<NonNullable<CrownConfig['prince']>>;
   devServer: Required<NonNullable<CrownConfig['devServer']>>;
