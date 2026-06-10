@@ -3,7 +3,7 @@
  */
 
 import { writeFile, readFile, copyFile, cp, stat } from 'node:fs/promises';
-import { dirname, join, resolve } from 'node:path';
+import { dirname, join, resolve, basename } from 'node:path';
 import { glob } from 'glob';
 import type { ResolvedCrownConfig } from '../types/config.js';
 import type { BuildResult } from '../types/content.js';
@@ -198,7 +198,7 @@ export class Builder {
         const assetsStat = await stat(this.config.input.assets);
         if (assetsStat.isDirectory()) {
           // Copy to output root (preserving directory name)
-          const dirName = this.config.input.assets.split('/').pop() || 'assets';
+          const dirName = basename(this.config.input.assets) || 'assets';
           const destDir = join(outputDir, dirName);
           await ensureDir(destDir);
           await cp(this.config.input.assets, destDir, { recursive: true });
