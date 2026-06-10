@@ -3,7 +3,7 @@
  */
 
 import chokidar, { FSWatcher } from 'chokidar';
-import { dirname, basename } from 'node:path';
+import { dirname } from 'node:path';
 import type { ResolvedCrownConfig } from '../types/config.js';
 import { debounce } from '../core/utils.js';
 
