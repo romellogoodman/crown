@@ -33,8 +33,8 @@ async function configureMarked(options: MarkdownOptions = {}): Promise<void> {
         const extension: MarkedExtension = extModule.default || extModule;
         marked.use(extension);
       } catch (error) {
-        console.warn(
-          `Warning: Failed to load marked extension from ${extPath}: ${(error as Error).message}`
+        throw new Error(
+          `Failed to load marked extension from ${extPath}: ${(error as Error).message}`
         );
       }
     }
