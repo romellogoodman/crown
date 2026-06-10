@@ -59,14 +59,18 @@ export async function previewPdf(configPath?: string): Promise<void> {
  * Open file in default browser/viewer
  */
 async function openInBrowser(path: string): Promise<void> {
-  const command = process.platform === 'darwin'
+  // On Windows, `start` is a cmd builtin, not an executable, so it must be
+  // invoked via `cmd /c`. The empty string is the (required) window title arg.
+  const isWin = process.platform === 'win32';
+  const command = isWin
+    ? 'cmd'
+    : process.platform === 'darwin'
     ? 'open'
-    : process.platform === 'win32'
-    ? 'start'
     : 'xdg-open';
+  const args = isWin ? ['/c', 'start', '', path] : [path];
 
   return new Promise((resolve, reject) => {
-    const child = spawn(command, [path], {
+    const child = spawn(command, args, {
       stdio: 'ignore',
       detached: true,
     });
