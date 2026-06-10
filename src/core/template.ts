@@ -10,6 +10,21 @@ import type { TemplateContext } from '../types/content.js';
 import { createMarkdownHelper } from './markdown.js';
 
 /**
+ * Resolve the build date, honoring SOURCE_DATE_EPOCH (seconds since the Unix
+ * epoch) for reproducible builds. Falls back to the current time.
+ */
+function resolveGeneratedDate(): Date {
+  const epoch = process.env.SOURCE_DATE_EPOCH;
+  if (epoch) {
+    const seconds = Number(epoch);
+    if (Number.isFinite(seconds)) {
+      return new Date(seconds * 1000);
+    }
+  }
+  return new Date();
+}
+
+/**
  * Template renderer with Handlebars
  */
 export class TemplateRenderer {
@@ -179,7 +194,7 @@ export class TemplateRenderer {
       chapters,
       content: chapters,
       data,
-      generatedDate: new Date(),
+      generatedDate: resolveGeneratedDate(),
     };
   }
 }
