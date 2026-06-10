@@ -32,10 +32,10 @@ Your browser will open with a live preview of your PDF. Edit any file and watch 
 
 ```bash
 # As a project dependency
-npm install crown
+npm install @romello/crown
 
 # Or use directly with npx
-npx crown create my-book
+npx @romello/crown create my-book
 ```
 
 **Requirements:**

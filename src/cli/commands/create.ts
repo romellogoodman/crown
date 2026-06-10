@@ -131,7 +131,7 @@ export async function createCommand(
         'preview:pdf': 'crown preview:pdf',
       },
       devDependencies: {
-        crown: '^0.1.0',
+        '@romello/crown': '^0.1.0',
       },
     };
 

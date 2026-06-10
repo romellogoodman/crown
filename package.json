@@ -1,5 +1,5 @@
 {
-  "name": "crown",
+  "name": "@romello/crown",
   "version": "0.1.0",
   "description": "A modern development framework for creating print-quality PDFs with PrinceXML",
   "type": "module",
@@ -7,6 +7,9 @@
   "types": "./dist/index.d.mts",
   "bin": {
     "crown": "./dist/cli.mjs"
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "exports": {
     ".": {
