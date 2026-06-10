@@ -2,7 +2,7 @@
  * Markdown compilation with frontmatter support
  */
 
-import { marked, type MarkedExtension } from 'marked';
+import { Marked, type MarkedExtension } from 'marked';
 import matter from 'gray-matter';
 import { readFile } from 'node:fs/promises';
 import { glob } from 'glob';
@@ -17,10 +17,19 @@ export interface MarkdownOptions {
 }
 
 /**
+ * The Marked instance for the current build. Recreated on each
+ * configureMarked() call so extensions don't accumulate across watch-mode
+ * rebuilds (which would progressively slow parsing on the old singleton).
+ */
+let activeMarked = new Marked();
+
+/**
  * Configure marked with options and optional extensions
  */
 async function configureMarked(options: MarkdownOptions = {}): Promise<void> {
-  marked.setOptions({
+  // Fresh instance per build — no cross-build extension accumulation
+  activeMarked = new Marked();
+  activeMarked.setOptions({
     gfm: options.gfm ?? true,
     breaks: options.breaks ?? false,
   });
@@ -31,7 +40,7 @@ async function configureMarked(options: MarkdownOptions = {}): Promise<void> {
       try {
         const extModule = await import(resolve(extPath));
         const extension: MarkedExtension = extModule.default || extModule;
-        marked.use(extension);
+        activeMarked.use(extension);
       } catch (error) {
         throw new Error(
           `Failed to load marked extension from ${extPath}: ${(error as Error).message}`
@@ -147,7 +156,7 @@ export async function compileMarkdownFile(
   const frontmatter = validateFrontmatter(data, filePath);
 
   // Compile markdown to HTML
-  const html = await marked(content);
+  const html = await activeMarked.parse(content);
 
   return {
     path: relative(root, filePath),
@@ -163,6 +172,6 @@ export async function compileMarkdownFile(
  */
 export function createMarkdownHelper(): (text: string) => string {
   return (text: string) => {
-    return marked.parseInline(text) as string;
+    return activeMarked.parseInline(text) as string;
   };
 }
