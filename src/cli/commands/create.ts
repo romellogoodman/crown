@@ -26,7 +26,7 @@ async function findTemplatesDir(): Promise<string> {
   // Also try resolving from the package root via require.resolve
   try {
     const require = createRequire(import.meta.url);
-    const pkgPath = require.resolve('crown/package.json');
+    const pkgPath = require.resolve('@romello/crown/package.json');
     possiblePaths.push(join(dirname(pkgPath), 'templates'));
   } catch {
     // Not installed as a package, that's fine
