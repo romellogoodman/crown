@@ -49,7 +49,7 @@ program
   .command('dev')
   .description('Start development server with hot reload')
   .option('-c, --config <path>', 'Path to config file')
-  .option('-p, --port <port>', 'Port to run dev server on', parseInt)
+  .option('-p, --port <port>', 'Port to run dev server on', (v) => parseInt(v, 10))
   .option('--host <host>', 'Host to run dev server on')
   .option('--open', 'Open browser automatically')
   .option('--no-open', 'Do not open browser')
