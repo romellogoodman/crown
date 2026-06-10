@@ -13,6 +13,7 @@ import { devCommand } from './commands/dev.js';
 import { watchCommand } from './commands/watch.js';
 import { previewHtml, previewPdf } from './commands/preview.js';
 import { createCommand } from './commands/create.js';
+import { doctorCommand } from './commands/doctor.js';
 import { logger } from './logger.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -92,6 +93,15 @@ program
   .option('-c, --config <path>', 'Path to config file')
   .action(async (options) => {
     await previewPdf(options.config);
+  });
+
+// Doctor command
+program
+  .command('doctor')
+  .description('Check that the environment is ready to build')
+  .option('-c, --config <path>', 'Path to config file')
+  .action(async (options) => {
+    await doctorCommand(options);
   });
 
 // Parse arguments
