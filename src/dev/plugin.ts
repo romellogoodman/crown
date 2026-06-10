@@ -20,6 +20,7 @@ export function crownPlugin(config: ResolvedCrownConfig): Plugin {
   let server: ViteDevServer | null = null;
   let watcher: Watcher | null = null;
   let isBuilding = false;
+  let pendingRebuild = false;
 
   return {
     name: 'vite-plugin-crown',
@@ -83,15 +84,18 @@ export function crownPlugin(config: ResolvedCrownConfig): Plugin {
     server: ViteDevServer,
     config: ResolvedCrownConfig
   ): Promise<void> {
-    if (isBuilding) {
-      return; // Skip if already building
-    }
-
     console.log(`\n📝 File changed: ${event.path}`);
 
     // Config changes require server restart
     if (event.type === 'config') {
       console.log('⚠️  Config changed. Please restart the dev server.');
+      return;
+    }
+
+    // If a build is already running, mark that another is needed so the change
+    // isn't silently dropped — a trailing build runs once the current finishes.
+    if (isBuilding) {
+      pendingRebuild = true;
       return;
     }
 
@@ -127,6 +131,12 @@ export function crownPlugin(config: ResolvedCrownConfig): Plugin {
       }
     } finally {
       isBuilding = false;
+    }
+
+    // Run a trailing build if a change arrived while we were building
+    if (pendingRebuild) {
+      pendingRebuild = false;
+      await buildAndNotify(server, config);
     }
   }
 }
