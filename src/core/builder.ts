@@ -179,12 +179,14 @@ export class Builder {
           nodir: true,
         });
 
-        for (const asset of assets) {
-          const relativePath = asset.substring(resolvedDir.length + 1);
-          const destPath = join(outputDir, relativePath);
-          await ensureDir(dirname(destPath));
-          await copyFile(asset, destPath);
-        }
+        await Promise.all(
+          assets.map(async (asset) => {
+            const relativePath = asset.substring(resolvedDir.length + 1);
+            const destPath = join(outputDir, relativePath);
+            await ensureDir(dirname(destPath));
+            await copyFile(asset, destPath);
+          })
+        );
       } catch {
         // Directory may not exist, that's fine
       }

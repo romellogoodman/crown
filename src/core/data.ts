@@ -17,10 +17,14 @@ export async function loadData(
 ): Promise<Record<string, unknown>> {
   const data: Record<string, unknown> = {};
 
-  for (const [key, path] of Object.entries(dataSources)) {
-    const absolutePath = resolvePath(root, path);
-    data[key] = await loadDataFile(absolutePath);
-  }
+  const entries = Object.entries(dataSources);
+  const loaded = await Promise.all(
+    entries.map(([, path]) => loadDataFile(resolvePath(root, path)))
+  );
+
+  entries.forEach(([key], i) => {
+    data[key] = loaded[i];
+  });
 
   return data;
 }

@@ -94,9 +94,13 @@ export class TemplateRenderer {
         absolute: true,
       });
 
-      for (const file of partialFiles) {
-        const content = await readFile(file, 'utf-8');
-        const name = this.getPartialName(file, partialsDir);
+      const partials = await Promise.all(
+        partialFiles.map(async (file) => ({
+          name: this.getPartialName(file, partialsDir),
+          content: await readFile(file, 'utf-8'),
+        }))
+      );
+      for (const { name, content } of partials) {
         this.handlebars.registerPartial(name, content);
       }
     } catch (error) {
