@@ -3,7 +3,7 @@
  */
 
 import chokidar, { FSWatcher } from 'chokidar';
-import { join, dirname } from 'node:path';
+import { dirname, basename } from 'node:path';
 import type { ResolvedCrownConfig } from '../types/config.js';
 import { debounce } from '../core/utils.js';
 
@@ -39,6 +39,11 @@ export class Watcher {
     this.watcher = chokidar.watch(watchPaths, {
       persistent: true,
       ignoreInitial: true,
+      // chokidar v4+ no longer supports glob patterns, so we watch
+      // directories/files and filter events by relevance below.
+      ignored: (path: string) =>
+        /(^|[/\\])(node_modules|\.git)([/\\]|$)/.test(path) ||
+        this.isOutputPath(path),
       awaitWriteFinish: {
         stabilityThreshold: 100,
         pollInterval: 50,
@@ -66,24 +71,21 @@ export class Watcher {
   }
 
   /**
-   * Get all paths to watch
+   * Get all paths to watch (directories and individual files — no globs)
    */
   private getWatchPaths(): string[] {
     const paths: string[] = [];
 
-    // Content directory
-    const contentDir = dirname(this.config.input.content);
-    paths.push(join(contentDir, '**/*.md'));
+    // Content and template directories (recursive); events are filtered by
+    // extension in getEventType.
+    paths.push(dirname(this.config.input.content));
+    paths.push(dirname(this.config.input.template));
 
-    // Template directory
-    const templateDir = dirname(this.config.input.template);
-    paths.push(join(templateDir, '**/*.{html,hbs}'));
-
-    // Styles
+    // Styles file
     paths.push(this.config.input.styles);
 
-    // Config file
-    paths.push(join(this.config.root, 'crown.config.{js,ts,json,mjs,cjs}'));
+    // Project root so config files (crown.config.*) are picked up
+    paths.push(this.config.root);
 
     // Custom helpers
     if (this.config.helpers) {
@@ -91,6 +93,17 @@ export class Watcher {
     }
 
     return paths;
+  }
+
+  /**
+   * Whether a path lives inside a build output directory (avoids rebuild loops)
+   */
+  private isOutputPath(path: string): boolean {
+    const outputDirs = [
+      dirname(this.config.output.html),
+      dirname(this.config.output.pdf),
+    ];
+    return outputDirs.some((dir) => path === dir || path.startsWith(dir + '/'));
   }
 
   /**
@@ -102,6 +115,11 @@ export class Watcher {
   ): void {
     const type = this.getEventType(path);
 
+    // Ignore files that aren't relevant content/template/style/config/helper
+    if (type === null) {
+      return;
+    }
+
     this.callback({
       type,
       path,
@@ -110,9 +128,15 @@ export class Watcher {
   }
 
   /**
-   * Determine event type from file path
+   * Determine event type from file path, or null if the file is irrelevant
    */
-  private getEventType(path: string): WatchEventType {
+  private getEventType(path: string): WatchEventType | null {
+    if (this.config.helpers && path === this.config.helpers) {
+      return 'helper';
+    }
+    if (/(^|[/\\])crown\.config\.(js|ts|json|mjs|cjs)$/.test(path)) {
+      return 'config';
+    }
     if (path.endsWith('.md')) {
       return 'content';
     }
@@ -122,12 +146,6 @@ export class Watcher {
     if (path.endsWith('.css') || path.endsWith('.scss')) {
       return 'style';
     }
-    if (path.includes('crown.config')) {
-      return 'config';
-    }
-    if (this.config.helpers && path === this.config.helpers) {
-      return 'helper';
-    }
-    return 'content'; // Default
+    return null;
   }
 }
